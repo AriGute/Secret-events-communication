@@ -28,6 +28,7 @@ class SEC {
 	}
 
 	#completeConnection(e) {
+		// TODO: check scenario when this function is called twice (two different connection calls)
 		console.log(`received message:`, e);
 		if (!this.#tempKeyHolder) {
 			// TODO: check if typeof is bigInt
@@ -35,8 +36,10 @@ class SEC {
 			window.removeEventListener(SEC.#clients[this.#name] + msgType.key, (e) =>
 				this.#completeConnection(e),
 			);
+			this.#tempKeyHolder = SEC.#generateFullKey(this.#tempKeyHolder, e.detail.key);
+		} else {
+			this.#tempKeyHolder = SEC.#generateFullKey(e.detail.key, this.#tempKeyHolder);
 		}
-		this.#tempKeyHolder = SEC.#generateFullKey(e.detail.key, this.#tempKeyHolder);
 		this.#keyChain[e.detail.owner] = this.#tempKeyHolder;
 		this.#tempKeyHolder = null;
 		this.debugLogs(this.#name); // for debugging
@@ -56,10 +59,13 @@ class SEC {
 	}
 
 	static #generateHalfKey(a) {
-		return SEC.#g ** a % SEC.#p;
+		const key = SEC.#g ** a % SEC.#p;
+		return key;
 	}
 
 	static #generateFullKey(a, b) {
+		const key = a ** b % SEC.#p;
+		console.log(`a: ${a}, b: ${b}, key: ${key}`);
 		return a ** b % SEC.#p;
 	}
 
