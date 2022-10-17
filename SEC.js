@@ -6,37 +6,28 @@ class SEC {
 	#tempKeyHolder = ''; // hold temp values and change per stage of the full key building process.
 
 	// shared variables
-	static #p = BigInt(524287); // TODO: find a better way to get bigger key
+	static #p = BigInt(71); // 524287
+	// TODO: find a better way to get bigger key
+	// sulotion 1: check Elliptic-curve Diffie–Hellman
+	// sulotion 2: use webassembly for calculations of keys
+	// sulotion 3: Key stretching: https://en.wikipedia.org/wiki/Key_stretching
+
 	static #g = BigInt(3);
-	static #clients = {}; // list of all client (SEC instances)
 	static #msgType = { key: 'key' };
 
 	constructor(name) {
 		this.#tempKeyHolder = null;
 		if (typeof name !== 'string') this.#throwError('Wrong type of name .', 'string', typeof name);
 		this.#name = name;
-		SEC.registerClient(name);
-		window.addEventListener(SEC.#clients[name] + SEC.#msgType.key, (e) =>
-			this.#completeConnection(e),
-		);
+		window.addEventListener(this.#name + SEC.#msgType.key, (e) => this.#completeConnection(e), {
+			capture: true,
+		});
 		Object.freeze(this);
 		console.log(this);
 	}
 
 	/**
-	 * Couple name and unique id for future connection.
-	 * @param {string} name name of the client
-	 */
-	static registerClient(name) {
-		if (SEC.#clients[name])
-			this.#throwError(
-				`The name ${name} already exist.\nCannot use the same name for more then one instance of SEC.`,
-			);
-		SEC.#clients[name] = Math.round(Math.random() * 1000000000000000).toString();
-	}
-
-	/**
-	 * Swap keys with specific client.
+	 * Set up communication with client that owned the specified name.
 	 * @param {string} name name of the client.
 	 */
 	connect(name) {
@@ -46,7 +37,7 @@ class SEC {
 	}
 
 	/**
-	 * set callback function to invoke once event is received from client with the specified name.
+	 * Set callback function to invoke once event is received from client that owned the specified name.
 	 * @param {string} name client name (specific instance).
 	 * @param {function} callback function to invoke once event is received.
 	 */
@@ -60,16 +51,16 @@ class SEC {
 	}
 
 	/**
-	 * @param {string} name targeted client
-	 * @param {object} data
+	 * @param {string} name the name of the client that should receive the event.
+	 * @param {object} data	JSON as object filled with any data.
 	 */
 	send(name, data) {
-		if (!SEC.#clients[name]) this.#throwError(`Can't find client with this name: ${name}.`);
+		// if (!SEC.#clients[name]) this.#throwError(`Can't find client with this name: ${name}.`);
 		if (!this.#keyChain[name]) this.#throwError(`Not connected to client with this name: ${name}.`);
 		if (typeof data !== 'object')
 			this.#throwError(`Expect to different typeof`, 'object', typeof data);
 
-		const eventType = this.#keyChain[name] ^ BigInt(SEC.#clients[name]);
+		const eventType = this.#keyChain[name] + name;
 		const details = data;
 		details.owner = this.#name;
 		const msg = new CustomEvent(eventType, { detail: details, cancelable: false });
@@ -85,6 +76,8 @@ class SEC {
 	 * @param {Event} e
 	 */
 	#completeConnection(e) {
+		if (this.#keyChain[e.detail.owner])
+			this.#throwError(`Already connected to this client name (${e.detail.owner})`);
 		if (!this.#tempKeyHolder) {
 			this.#sendHalfKey(e.detail.owner);
 			this.#tempKeyHolder = SEC.#generateFullKey(this.#tempKeyHolder, e.detail.key);
@@ -94,7 +87,7 @@ class SEC {
 		this.#keyChain[e.detail.owner] = this.#tempKeyHolder;
 		this.#tempKeyHolder = null;
 
-		const eventType = this.#keyChain[e.detail.owner] ^ BigInt(SEC.#clients[this.#name]);
+		const eventType = this.#keyChain[e.detail.owner] + this.#name;
 
 		const callBackFunction = (e) => {
 			console.log('');
@@ -117,7 +110,7 @@ class SEC {
 	#sendHalfKey(name) {
 		this.#tempKeyHolder = SEC.#generateHalfKey(SEC.#randomNum(11, 99));
 		const data = { owner: this.#name, key: this.#tempKeyHolder };
-		const event = new CustomEvent(SEC.#clients[name] + SEC.#msgType.key, {
+		const event = new CustomEvent(name + SEC.#msgType.key, {
 			detail: data,
 			cancelable: false,
 		});
@@ -134,7 +127,7 @@ class SEC {
 	static #generateFullKey(a, b) {
 		if (typeof a != 'bigint')
 			this.#throwError('Input should be of type bigint', 'bigint', typeof a);
-		if (typeof a != 'bigint')
+		if (typeof b != 'bigint')
 			this.#throwError('Input should be of type bigint', 'bigint', typeof b);
 		const key = a ** b % SEC.#p;
 		console.log(`a: ${a}, b: ${b}, key: ${key}`);
@@ -151,7 +144,7 @@ class SEC {
 	 * @param {string} received real value (optional)
 	 */
 	#throwError(subject, expected, received) {
-		let errMsg = `Client name: ${this.#name}`;
+		let errMsg = `Client (${this.#name}) encountered an error.`;
 		if (errMsg) errMsg += `\n${subject}`;
 		if (expected && received) errMsg += `\nexpect: ${expected}\nreceived: ${received}`;
 		throw Error(errMsg);
