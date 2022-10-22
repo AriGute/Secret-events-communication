@@ -8,7 +8,7 @@ class SEC {
 	// shared variables
 	static #p = BigInt(71); // 524287
 	// TODO: find a better way to get bigger key
-	// solution 1: check Elliptic-curve Diffie–Hellman // this is new method that may have unknown vulnerabilities.
+	// solution 1: check Elliptic-curve Diffie–Hellman
 	// solution 2: check RSA
 	// solution 3: use webassembly for calculations of keys
 
