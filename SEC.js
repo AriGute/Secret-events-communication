@@ -11,7 +11,6 @@ class SEC {
 	// solution 1: check Elliptic-curve Diffie–Hellman // this is new method that may have unknown vulnerabilities.
 	// solution 2: check RSA
 	// solution 3: use webassembly for calculations of keys
-	// solution 4: Key stretching: https://en.wikipedia.org/wiki/Key_stretching
 
 	static #g = BigInt(3);
 	static #msgType = { key: 'key' };
