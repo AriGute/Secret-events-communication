@@ -8,9 +8,10 @@ class SEC {
 	// shared variables
 	static #p = BigInt(71); // 524287
 	// TODO: find a better way to get bigger key
-	// sulotion 1: check Elliptic-curve Diffie–Hellman
-	// sulotion 2: use webassembly for calculations of keys
-	// sulotion 3: Key stretching: https://en.wikipedia.org/wiki/Key_stretching
+	// solution 1: check Elliptic-curve Diffie–Hellman // this is new method that may have unknown vulnerabilities.
+	// solution 2: check RSA
+	// solution 3: use webassembly for calculations of keys
+	// solution 4: Key stretching: https://en.wikipedia.org/wiki/Key_stretching
 
 	static #g = BigInt(3);
 	static #msgType = { key: 'key' };
@@ -135,6 +136,11 @@ class SEC {
 	}
 
 	static #randomNum(min, max) {
+		/**
+		 * TODO: upgrade this function to Cryptographically_secure_pseudorandom_number_generator
+		 * https://en.wikipedia.org/wiki/Cryptographically_secure_pseudorandom_number_generator
+		 */
+
 		return BigInt(Math.round(Math.random() * (max - min + 1) + min));
 	}
 
