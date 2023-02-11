@@ -5,4 +5,4 @@ Two "clients" (clients is an instance of SEC calss) need to connect each other (
 
 At the moment the swap keys method is diffie hellman.
 
-Example can be found in test.js file.
+Example can be found in `test.js` file.
