@@ -3,6 +3,6 @@ Encrypted events E2E - Send event to specific listener while no one else can lis
 
 Two "clients" (clients is an instance of SEC class) need to connect each other (swap keys) befor they can send events to each other.
 
-At the moment the swap keys method is diffie hellman.
+The current method for swap keys is diffie hellman.
 
 Example can be found in `test.js` file.
