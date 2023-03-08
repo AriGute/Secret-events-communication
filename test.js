@@ -1,5 +1,4 @@
 const client1 = new SEC('client1');
-SEC.prototype.connect = (n) => console.log(n); // check Object.freeze(SEC)
 const client2 = new SEC('client2');
 const client3 = new SEC('client3');
 
