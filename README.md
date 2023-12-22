@@ -1,5 +1,5 @@
 # Secret-events-communication
-Encrypted events E2E - Send event to specific listener while no one else can listen to that event.
+Encrypted events E2E - Send event to specific listener while no one else can predict the event name.
 
 Two "clients" (clients is an instance of SEC class) need to connect each other (swap keys) befor they can send events to each other.
 
